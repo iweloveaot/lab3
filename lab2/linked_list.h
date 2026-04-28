@@ -33,7 +33,7 @@ public:
 
     LinkedList(const T *items, int count) : first(nullptr), last(nullptr), length(0) {
         if (count < 0)
-            throw InvalidArgumentException("Negative count for linked list:", count);
+            throw InvalidArgumentException("Negative count for linked list");
         for (int i = 0; i < count; i++) {
             Append(items[i]);
         }
@@ -69,7 +69,7 @@ public:
 
     const T& Get(int index) const { 
         if (index < 0 || index >= length)
-            throw IndexOutOfRangeException("Index out of range in LinkedList::Get:", index);
+            throw IndexOutOfRangeException("Index out of range in LinkedList::Get");
         Node *current = first;
         for (int i = 0; i < index; i++)
             current = current->next;
@@ -78,11 +78,11 @@ public:
 
     LinkedList<T>* GetSubList(int startIndex, int endIndex) const {
         if (startIndex < 0)
-            throw IndexOutOfRangeException("Negative index for sublist:", startIndex);
+            throw IndexOutOfRangeException("Negative index for sublist");
         else if (endIndex >= length)
-            throw IndexOutOfRangeException("Invalid sublist end index:", endIndex);
+            throw IndexOutOfRangeException("Invalid sublist end index");
         else if (startIndex > endIndex)
-            throw IndexOutOfRangeException("Invalid sublist indexes (start > end):", startIndex);
+            throw IndexOutOfRangeException("Invalid sublist indexes (start > end)");
 
         LinkedList<T> *sub_list = nullptr;
         try {
@@ -201,7 +201,7 @@ public:
         
         const T& GetCurrent() const override {
             if (!current) {
-                throw IndexOutOfRangeException("Enumerator not positioned", -1);
+                throw IndexOutOfRangeException("Enumerator not positioned");
             }
             return current->data;
         }

@@ -43,7 +43,7 @@ public:
 
     DynamicArray(const T *items, int count) : size(count), capacity(count) {
         if (count < 0) 
-            throw InvalidArgumentException("Negative count for dynamic array:", count);
+            throw InvalidArgumentException("Negative count for dynamic array");
         if (items == nullptr && count > 0)
             throw NullReferenceException("Null pointer for dynamic array");
         data = allocateMemory<T>(capacity);
@@ -52,7 +52,7 @@ public:
     }
 
     explicit DynamicArray(int size) : size(size), capacity(size) {
-        if (size < 0) throw InvalidArgumentException("Negative size for dynamic array:", size);
+        if (size < 0) throw InvalidArgumentException("Negative size for dynamic array");
         data = allocateMemory<T>(capacity);
         for (int i=0; i<size; i++)
             data[i] = T();
@@ -72,13 +72,13 @@ public:
 
     const T& Get(int index) const {
         if (index < 0 || index >= size)
-            throw IndexOutOfRangeException("Index out of range in DynamicArray::Get:", index);
+            throw IndexOutOfRangeException("Index out of range in DynamicArray::Get");
         return data[index];
     }
 
     void Set(int index, T value) {
         if (index < 0 || index >= size)
-            throw IndexOutOfRangeException("Index out of range in DynamicArray::Set:", index);
+            throw IndexOutOfRangeException("Index out of range in DynamicArray::Set");
         data[index] = value;
     }
 
@@ -88,7 +88,7 @@ public:
 
     void Resize(int newSize) {
         if (newSize < 0) 
-            throw InvalidArgumentException("Negative new size for dynamic array:", newSize);
+            throw InvalidArgumentException("Negative new size for dynamic array");
         if (newSize == size)    
             return;
         ensureCapacity(newSize);

@@ -72,7 +72,7 @@ private:
     BitSequence* applyBitwise(const BitSequence& other,
                               Bit (Bit::*op)(const Bit&) const) const {
         if (GetLength() != other.GetLength()) {
-            throw InvalidArgumentException("BitSequence lengths must match for bitwise operations:", GetLength());
+            throw InvalidArgumentException("BitSequence lengths must match for bitwise operations");
         }
         BitSequence* result = new BitSequence();
         if (result == nullptr)

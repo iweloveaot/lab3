@@ -447,7 +447,7 @@ TEST(test_list_enumerator) {
 
 TEST(test_exception_inheritance) {
     try {
-        throw IndexOutOfRangeException("Test", 5);
+        throw IndexOutOfRangeException("Test");
     } catch (const BaseException& e) {
         ASSERT_TRUE(e.what() != nullptr);
     }

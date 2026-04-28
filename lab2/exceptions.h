@@ -13,7 +13,7 @@ public:
 
 class InvalidArgumentException : public BaseException {
 public:
-    InvalidArgumentException(const char* msg = "Invalid argument", int arg = 0)
+    InvalidArgumentException(const char* msg = "Invalid argument")
         : BaseException(msg) {}    
 };
 
@@ -25,7 +25,7 @@ public:
 
 class IndexOutOfRangeException : public BaseException {
 public:
-    IndexOutOfRangeException(const char* msg = "Index out of range", int index = 0)
+    IndexOutOfRangeException(const char* msg = "Index out of range")
         : BaseException(msg) {}    
 };
 
