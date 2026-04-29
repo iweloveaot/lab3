@@ -6,7 +6,7 @@ private:
     double re, im;
 public:
     Complex(double re = 0.0, double im = 0.0) : re(re), im(im) {}
-    Complex(const Complex& other) = default;
+    Complex(const Complex &other) = default;
     
     double real() const { 
         return re; 
@@ -41,12 +41,15 @@ public:
         return Complex(-re, -im); 
     }
 
-    bool operator==(const Complex& other) const {
+    bool operator==(const Complex &other) const {
         return re == other.re && im == other.im;
     }
-    bool operator!=(const Complex& other) const { return !(*this == other); }
+    
+    bool operator!=(const Complex &other) const { 
+        return !(*this == other); 
+    }
 
-    Complex& operator=(const Complex& other) = default;
+    Complex& operator=(const Complex &other) = default;
 };
 
 
