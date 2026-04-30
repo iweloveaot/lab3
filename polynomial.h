@@ -81,6 +81,7 @@ public:
         for (int i = 0; i < coefs.GetLength(); i++) 
             new_coefs.Set(i, coefs[i] * scalar);
         Polynomial<T> multiplied = Polynomial<T>(new_coefs);
+        multiplied.Normalize();
         return multiplied;
     }
 
@@ -194,7 +195,7 @@ public:
         return GetCoefficient(index);
     }
 
-    bool operator==(Polynomial<T> &other) {
+    bool operator==(const Polynomial<T> &other) {
         if (Degree() != other.Degree()) return false;
         for (int i = 0; i <= Degree(); i++) {
             if (!(GetCoefficient(i) == other.GetCoefficient(i))) return false;
