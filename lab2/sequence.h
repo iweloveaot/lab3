@@ -44,7 +44,7 @@ public:
 
     virtual IEnumerator<T>* GetEnumerator() const = 0;
 
-    virtual const T& operator[](int index) {
+    virtual const T& operator[](int index) const {
         return Get(index);
     };
 

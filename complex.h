@@ -1,6 +1,8 @@
 #ifndef _COMPLEX_H_
 #define _COMPLEX_H_
 
+#include <iostream>
+
 class Complex {
 private:
     double re, im;
@@ -44,12 +46,25 @@ public:
     bool operator==(const Complex &other) const {
         return re == other.re && im == other.im;
     }
-    
+
     bool operator!=(const Complex &other) const { 
         return !(*this == other); 
     }
 
     Complex& operator=(const Complex &other) = default;
+
+    friend std::ostream& operator<<(std::ostream& os, const Complex& c) {
+        os << c.re << (c.im >= 0 ? "+" : "") << c.im << "i";
+        return os;
+    }
+
+    friend std::istream& operator>>(std::istream &is, Complex &c) {
+        char sign, i_char;
+        is >> c.re >> sign >> c.im >> i_char;
+        if (sign == '-') 
+            c.im = -c.im;
+        return is;
+    }
 };
 
 

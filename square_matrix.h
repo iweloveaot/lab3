@@ -116,6 +116,30 @@ public:
         return *this;
     }
 
+    friend std::ostream& operator<<(std::ostream& os, const SquareMatrix& m) {
+        os << "[";
+        for (size_t i = 0; i < N; i++) {
+            os << "[";
+            for (size_t j = 0; j < N; ++j) {
+                os << m.data[i][j];
+                if (j + 1 < N) os << ", ";
+            }
+            os << "]";
+            if (i + 1 < N) os << "\n ";
+        }
+        os << "]";
+        return os;
+    }
+
+    friend std::istream& operator>>(std::istream& is, SquareMatrix& m) {
+        for (size_t i = 0; i < N; ++i) {
+            for (size_t j = 0; j < N; ++j) {
+                is >> m.data[i][j];
+            }
+        }
+        return is;
+    }
+
 };
 
 #endif // SQUARE_MATRIX_H

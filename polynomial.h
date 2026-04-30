@@ -39,7 +39,7 @@ public:
         return coefs.GetLength() - 1; 
     }
 
-    const T& GetCoefficient(int degree) {
+    const T& GetCoefficient(int degree) const {
         if (degree > Degree())
             throw IndexOutOfRangeException("Degree out of range in Polynomial::GetCoefficient");
         else if (degree < 0)
@@ -84,7 +84,7 @@ public:
         return multiplied;
     }
 
-    void Evalute(const T &x, T &result) {
+    void Evaluate(const T &x, T &result) {
         result = T();
         T power = T(1);
         for (int i = 0; i < coefs.GetLength(); i++) {
