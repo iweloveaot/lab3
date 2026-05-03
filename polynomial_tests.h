@@ -8,11 +8,11 @@
 #include "complex.h"
 #include "square_matrix.h"
 #include "polynomial.h"
+#include "polynomial_interpolation.h"
 #include "lab2/exceptions.h"
 
-// Счётчик тестов (общий с tests.h)
-static int tests_passed;
-static int tests_failed;
+static int tests_passed = 0;
+static int tests_failed = 0;
 
 #define TEST(name) void name()
 #define RUN_TEST(name) do { \
@@ -608,6 +608,102 @@ TEST(test_polynomial_with_square_matrix) {
     ASSERT_TRUE(result == expected);
 }
 
+// ==================== Interpolation Tests ====================
+
+TEST(test_gaussian_elimination_2x2) {
+    double** X = new double*[2];
+    for (int i = 0; i < 2; ++i) X[i] = new double[2];
+    
+    X[0][0] = 2; X[0][1] = 1;
+    X[1][0] = 1; X[1][1] = -1;
+    
+    double y[2] = {5, 1};
+    double res[2] = {0, 0};
+    
+    Gaussian(X, y, res, 2);
+    
+    ASSERT_TRUE(doubleEqual(res[0], 2.0));
+    ASSERT_TRUE(doubleEqual(res[1], 1.0));
+    
+    for (int i = 0; i < 2; ++i) delete[] X[i];
+    delete[] X;
+}
+
+TEST(test_gaussian_elimination_pivoting) {
+    double** X = new double*[2];
+    for (int i = 0; i < 2; ++i) X[i] = new double[2];
+    
+    X[0][0] = 0; X[0][1] = 2;
+    X[1][0] = 3; X[1][1] = 4;
+    
+    double y[2] = {4, 5};
+    double res[2] = {0, 0};
+    
+    Gaussian(X, y, res, 2);
+    
+    ASSERT_TRUE(doubleEqual(res[0], -1));
+    ASSERT_TRUE(doubleEqual(res[1], 2.0));
+    
+    for (int i = 0; i < 2; ++i) delete[] X[i];
+    delete[] X;
+}
+
+TEST(test_base_interpolation_known_polynomial) {
+    double x[] = {0.0, 1.0, 2.0};
+    double y[] = {2.0, 4.0, 4.0}; // P(0)=2, P(1)=4, P(2)=4
+    Polynomial<double> p = BaseInterpolation(x, y, 3);
+    
+    ASSERT_EQ(p.Degree(), 2);
+    ASSERT_TRUE(doubleEqual(p.GetCoefficient(0), 2.0));
+    ASSERT_TRUE(doubleEqual(p.GetCoefficient(1), 3.0));
+    ASSERT_TRUE(doubleEqual(p.GetCoefficient(2), -1.0));
+}
+
+TEST(test_basis_polynomial_delta_property) {
+    double x[] = {1.0, 2.0, 4.0};
+    int n = 3;
+    double val;
+    
+    for (int i = 0; i < n; ++i) {
+        Polynomial<double> Li = BasisPolynomial_i(x, n, i);
+        ASSERT_EQ(Li.Degree(), n - 1);
+        for (int j = 0; j < n; ++j) {
+            Li.Evaluate(x[j], val);
+            double expected = (i == j) ? 1.0 : 0.0;
+            ASSERT_TRUE(doubleEqual(val, expected));
+        }
+    }
+}
+
+TEST(test_lagrange_interpolation_passes_through_points) {
+    double x[] = {0.0, 1.0, 2.0, 3.0};
+    double y[] = {1.0, 2.0, 5.0, 10.0};
+    Polynomial<double> p = Lagrange(x, y, 4);
+    
+    double val;
+    for (int i = 0; i < 4; ++i) {
+        p.Evaluate(x[i], val);
+        ASSERT_TRUE(doubleEqual(val, y[i]));
+    }
+}
+
+TEST(test_interpolation_edge_cases) {
+    // Линейная функция (2 точки)
+    double x[] = {0.0, 5.0};
+    double y[] = {10.0, 0.0}; // y = 10 - 2x
+    Polynomial<double> p_lin = Lagrange(x, y, 2);
+    ASSERT_EQ(p_lin.Degree(), 1);
+    ASSERT_TRUE(doubleEqual(p_lin.GetCoefficient(0), 10.0));
+    ASSERT_TRUE(doubleEqual(p_lin.GetCoefficient(1), -2.0));
+    
+    // Константа (1 точка)
+    double x0[] = {3.0};
+    double y0[] = {7.0};
+    Polynomial<double> p_const = BaseInterpolation(x0, y0, 1);
+    ASSERT_EQ(p_const.Degree(), 0);
+    ASSERT_TRUE(doubleEqual(p_const.GetCoefficient(0), 7.0));
+}
+
 // ==================== Test Runner ====================
 
 int runPolynomialTests() {
@@ -652,6 +748,19 @@ int runPolynomialTests() {
     RUN_TEST(test_polynomial_operators);
     RUN_TEST(test_polynomial_with_complex);
     RUN_TEST(test_polynomial_with_square_matrix);
+
+     // === НОВЫЕ ТЕСТЫ ИНТЕРПОЛЯЦИИ ===
+    RUN_TEST(test_gaussian_elimination_2x2);
+    RUN_TEST(test_gaussian_elimination_pivoting);
+    RUN_TEST(test_base_interpolation_known_polynomial);
+    RUN_TEST(test_basis_polynomial_delta_property);
+    RUN_TEST(test_lagrange_interpolation_passes_through_points);
+    RUN_TEST(test_interpolation_edge_cases);
+
+    std::cout << "\n=== Test Summary ===\n";
+    std::cout << "Passed: " << tests_passed << "\n";
+    std::cout << "Failed: " << tests_failed << "\n";
+    std::cout << "Total:  " << (tests_passed + tests_failed) << "\n";
     
     return tests_failed > 0 ? 1 : 0;
 }
