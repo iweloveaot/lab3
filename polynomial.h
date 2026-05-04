@@ -1,5 +1,5 @@
-#ifndef _POLYNOMIAL_
-#define _POLYNOMIAL_
+#ifndef _POLYNOMIAL_H_
+#define _POLYNOMIAL_H_
 
 #include "lab2/mutable_array_sequence.h"
 
@@ -236,4 +236,4 @@ public:
 }; 
 
 
-#endif /*_POLYNOMIAL_*/
+#endif /*_POLYNOMIAL_H_*/

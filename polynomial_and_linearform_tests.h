@@ -9,6 +9,7 @@
 #include "square_matrix.h"
 #include "polynomial.h"
 #include "polynomial_interpolation.h"
+#include "linear_form.h"
 #include "lab2/exceptions.h"
 
 static int tests_passed = 0;
@@ -688,7 +689,6 @@ TEST(test_lagrange_interpolation_passes_through_points) {
 }
 
 TEST(test_interpolation_edge_cases) {
-    // Линейная функция (2 точки)
     double x[] = {0.0, 5.0};
     double y[] = {10.0, 0.0}; // y = 10 - 2x
     Polynomial<double> p_lin = Lagrange(x, y, 2);
@@ -696,7 +696,6 @@ TEST(test_interpolation_edge_cases) {
     ASSERT_TRUE(doubleEqual(p_lin.GetCoefficient(0), 10.0));
     ASSERT_TRUE(doubleEqual(p_lin.GetCoefficient(1), -2.0));
     
-    // Константа (1 точка)
     double x0[] = {3.0};
     double y0[] = {7.0};
     Polynomial<double> p_const = BaseInterpolation(x0, y0, 1);
@@ -704,9 +703,208 @@ TEST(test_interpolation_edge_cases) {
     ASSERT_TRUE(doubleEqual(p_const.GetCoefficient(0), 7.0));
 }
 
+// ==================== LinearForm Tests ====================
+
+TEST(test_linear_form_constructors_and_access) {
+    LinearForm<double> lf1;
+    ASSERT_EQ(lf1.CoefficicentCount(), 0);
+
+    double data[] = {1.0, 2.0, 3.0};
+    LinearForm<double> lf2(data, 3);
+    ASSERT_EQ(lf2.CoefficicentCount(), 3);
+    ASSERT_TRUE(doubleEqual(lf2.GetCoefficient(0), 1.0));
+    ASSERT_TRUE(doubleEqual(lf2.GetCoefficient(2), 3.0));
+
+    LinearForm<double> lf3(4);
+    ASSERT_EQ(lf3.CoefficicentCount(), 4);
+
+    LinearForm<double> lf4(lf2);
+    ASSERT_EQ(lf4.CoefficicentCount(), 3);
+    ASSERT_TRUE(doubleEqual(lf4.GetCoefficient(1), 2.0));
+
+    ASSERT_THROW((lf2.GetCoefficient(-1)), IndexOutOfRangeException);
+    ASSERT_THROW((lf2.GetCoefficient(5)), IndexOutOfRangeException);
+}
+
+TEST(test_linear_form_addition) {
+    double c1[] = {1.0, 2.0, 3.0};
+    double c2[] = {4.0, 5.0};
+    LinearForm<double> lf1(c1, 3), lf2(c2, 2);
+    
+    LinearForm<double> res = lf1 + lf2;
+    ASSERT_EQ(res.CoefficicentCount(), 3);
+    ASSERT_TRUE(doubleEqual(res[0], 5.0));
+    ASSERT_TRUE(doubleEqual(res[1], 7.0));
+    ASSERT_TRUE(doubleEqual(res[2], 3.0));
+    
+    ASSERT_TRUE((lf1 + lf2) == (lf2 + lf1));
+    
+    LinearForm<double> zero;
+    ASSERT_TRUE((lf1 + zero) == lf1);
+}
+
+TEST(test_linear_form_subtraction) {
+    double c1[] = {10.0, 20.0, 30.0};
+    double c2[] = {1.0, 2.0};
+    LinearForm<double> lf1(c1, 3), lf2(c2, 2);
+    
+    LinearForm<double> res = lf1 - lf2;
+    ASSERT_TRUE(doubleEqual(res[0], 9.0));
+    ASSERT_TRUE(doubleEqual(res[1], 18.0));
+    ASSERT_TRUE(doubleEqual(res[2], 30.0));
+    
+    LinearForm<double> self_diff = lf1 - lf1;
+    ASSERT_EQ(self_diff.CoefficicentCount(), 3);
+    ASSERT_TRUE(doubleEqual(self_diff[0], 0.0));
+    ASSERT_TRUE(doubleEqual(self_diff[1], 0.0));
+    ASSERT_TRUE(doubleEqual(self_diff[2], 0.0));
+}
+
+TEST(test_linear_form_multiply_scalar) {
+    double c[] = {1.0, 2.0, 3.0};
+    LinearForm<double> lf(c, 3);
+    
+    LinearForm<double> res = lf * 2.0;
+    ASSERT_TRUE(doubleEqual(res[0], 2.0));
+    ASSERT_TRUE(doubleEqual(res[1], 4.0));
+    ASSERT_TRUE(doubleEqual(res[2], 6.0));
+    
+    LinearForm<double> zeroed = lf * 0.0;
+    ASSERT_EQ(zeroed.CoefficicentCount(), 0);
+    
+    ASSERT_TRUE((lf * 1.0) == lf);
+}
+
+TEST(test_linear_form_evaluate) {
+    double c[] = {1.0, 2.0, 3.0};
+    LinearForm<double> lf(c, 3);
+    
+    double res;
+    lf.Evaluate(2.0, res); // 1 + 4 + 12 = 17
+    ASSERT_TRUE(doubleEqual(res, 17.0));
+    
+    lf.Evaluate(0.0, res); // 1
+    ASSERT_TRUE(doubleEqual(res, 1.0));
+    
+    lf.Evaluate(-1.0, res); // 1 - 2 + 3 = 2
+    ASSERT_TRUE(doubleEqual(res, 2.0));
+}
+
+TEST(test_linear_form_append_set_coefficient) {
+    double c[] = {1.0, 2.0};
+    LinearForm<double> lf(c, 2);
+    
+    LinearForm<double> appended = lf.AppendCoefficient(3.0);
+    ASSERT_EQ(appended.CoefficicentCount(), 3);
+    ASSERT_TRUE(doubleEqual(appended[2], 3.0));
+    ASSERT_EQ(lf.CoefficicentCount(), 2);
+    
+    LinearForm<double> modified = lf.SetCoefficient(0, 5.0);
+    ASSERT_TRUE(doubleEqual(modified[0], 5.0));
+    ASSERT_EQ(modified.CoefficicentCount(), 2);
+    
+    LinearForm<double> extended = lf.SetCoefficient(3, 7.0);
+    ASSERT_EQ(extended.CoefficicentCount(), 4);
+    ASSERT_TRUE(doubleEqual(extended[3], 7.0));
+    ASSERT_TRUE(doubleEqual(extended[2], 0.0));
+    
+    ASSERT_THROW((lf.SetCoefficient(-1, 1.0)), IndexOutOfRangeException);
+}
+
+TEST(test_linear_form_map_reduce_where) {
+    double c[] = {1.0, 2.0, 3.0, 4.0};
+    LinearForm<double> lf(c, 4);
+    
+    auto square = [](const double& x) { return x * x; };
+    LinearForm<double> mapped = lf.Map(square);
+    ASSERT_TRUE(doubleEqual(mapped[0], 1.0));
+    ASSERT_TRUE(doubleEqual(mapped[3], 16.0));
+    
+    auto add = [](const double& a, const double& b) { return a + b; };
+    double sum;
+    lf.Reduce(add, 0.0, sum);
+    ASSERT_TRUE(doubleEqual(sum, 10.0));
+    
+    auto greaterThan2 = [](const double& x) { return x > 2.0; };
+    LinearForm<double> filtered = lf.Where(greaterThan2);
+    ASSERT_EQ(filtered.CoefficicentCount(), 4);
+    ASSERT_TRUE(doubleEqual(filtered[0], 0.0));
+    ASSERT_TRUE(doubleEqual(filtered[1], 0.0));
+    ASSERT_TRUE(doubleEqual(filtered[2], 3.0));
+    ASSERT_TRUE(doubleEqual(filtered[3], 4.0));
+}
+
+TEST(test_linear_form_compound_operators_and_equality) {
+    double c1[] = {1.0, 2.0};
+    double c2[] = {3.0, 4.0};
+    LinearForm<double> lf1(c1, 2), lf2(c2, 2);
+    
+    LinearForm<double> temp1 = lf1;
+    temp1 += lf2;
+    ASSERT_TRUE(temp1 == (lf1 + lf2));
+    
+    LinearForm<double> temp2 = lf1;
+    temp2 -= lf2;
+    ASSERT_TRUE(temp2 == (lf1 - lf2));
+    
+    LinearForm<double> temp3 = lf1;
+    temp3 *= 3.0;
+    ASSERT_TRUE(temp3 == lf1.MultiplyScalar(3.0));
+    
+    ASSERT_TRUE(doubleEqual(lf1[0], 1.0));
+    ASSERT_TRUE(doubleEqual(lf1[1], 2.0));
+    
+    LinearForm<double> lf3(c1, 2);
+    ASSERT_TRUE(lf1 == lf3);
+    ASSERT_FALSE(lf1 != lf3);
+    ASSERT_TRUE(lf1 != lf2);
+    
+    LinearForm<double> lf4;
+    lf4 = lf1;
+    ASSERT_TRUE(lf4 == lf1);
+    lf4 = lf4;
+    ASSERT_TRUE(lf4 == lf1);
+}
+
+TEST(test_linear_form_with_complex) {
+    Complex c[] = {Complex(1, 0), Complex(0, 1), Complex(2, 0)}; // F(z) = 1 + iz + 2z^2
+    LinearForm<Complex> lf(c, 3);
+    
+    ASSERT_EQ(lf.CoefficicentCount(), 3);
+    ASSERT_TRUE(complexEqual(lf.GetCoefficient(0), Complex(1, 0)));
+    ASSERT_TRUE(complexEqual(lf.GetCoefficient(1), Complex(0, 1)));
+    
+    Complex z(1.0, 1.0);
+    Complex res;
+    lf.Evaluate(z, res);
+    ASSERT_TRUE(complexEqual(res, Complex(0.0, 5.0)));
+    
+    auto to_conjugate = [](const Complex& x) { return Complex(x.real(), -x.imag()); };
+    LinearForm<Complex> conj_lf = lf.Map(to_conjugate);
+    ASSERT_TRUE(complexEqual(conj_lf[0], Complex(1, 0)));
+    ASSERT_TRUE(complexEqual(conj_lf[1], Complex(0, -1)));
+}
+
+TEST(test_linear_form_edge_cases) {
+    LinearForm<double> empty;
+    double c[] = {5.0};
+    LinearForm<double> single(c, 1);
+    
+    LinearForm<double> added = empty + single;
+    ASSERT_EQ(added.CoefficicentCount(), 1);
+    ASSERT_TRUE(doubleEqual(added[0], 5.0));
+    
+    // Где все коэффициенты нулевые
+    double zeros[] = {0.0, 0.0, 0.0};
+    LinearForm<double> all_zeros(zeros, 3);
+    double eval_res;
+    all_zeros.Evaluate(100.0, eval_res);
+    ASSERT_TRUE(doubleEqual(eval_res, 0.0));
+}
+
 // ==================== Test Runner ====================
 
-int runPolynomialTests() {
+int runPolynomialAndLinearFormTests() {
     std::cout << "\n=== Running Polynomial Lab Tests ===\n\n";
     
     // Complex
@@ -749,13 +947,25 @@ int runPolynomialTests() {
     RUN_TEST(test_polynomial_with_complex);
     RUN_TEST(test_polynomial_with_square_matrix);
 
-     // === НОВЫЕ ТЕСТЫ ИНТЕРПОЛЯЦИИ ===
+    // Interpolation
     RUN_TEST(test_gaussian_elimination_2x2);
     RUN_TEST(test_gaussian_elimination_pivoting);
     RUN_TEST(test_base_interpolation_known_polynomial);
     RUN_TEST(test_basis_polynomial_delta_property);
     RUN_TEST(test_lagrange_interpolation_passes_through_points);
     RUN_TEST(test_interpolation_edge_cases);
+
+    // Linear form
+    RUN_TEST(test_linear_form_constructors_and_access);
+    RUN_TEST(test_linear_form_addition);
+    RUN_TEST(test_linear_form_subtraction);
+    RUN_TEST(test_linear_form_multiply_scalar);
+    RUN_TEST(test_linear_form_evaluate);
+    RUN_TEST(test_linear_form_append_set_coefficient);
+    RUN_TEST(test_linear_form_map_reduce_where);
+    RUN_TEST(test_linear_form_compound_operators_and_equality);
+    RUN_TEST(test_linear_form_with_complex);
+    RUN_TEST(test_linear_form_edge_cases);
 
     std::cout << "\n=== Test Summary ===\n";
     std::cout << "Passed: " << tests_passed << "\n";
