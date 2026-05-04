@@ -779,15 +779,18 @@ TEST(test_linear_form_evaluate) {
     double c[] = {1.0, 2.0, 3.0};
     LinearForm<double> lf(c, 3);
     
+    double x[] = {2.0, 3.0};
     double res;
-    lf.Evaluate(2.0, res); // 1 + 4 + 12 = 17
-    ASSERT_TRUE(doubleEqual(res, 17.0));
+    lf.Evaluate(x, res); // 1 + 4 + 9 = 14
+    ASSERT_TRUE(doubleEqual(res, 14.0));
     
-    lf.Evaluate(0.0, res); // 1
+    x[0] = 0.0, x[1] = 0.0;
+    lf.Evaluate(x, res); // 1
     ASSERT_TRUE(doubleEqual(res, 1.0));
     
-    lf.Evaluate(-1.0, res); // 1 - 2 + 3 = 2
-    ASSERT_TRUE(doubleEqual(res, 2.0));
+    x[0] = -1.0, x[1] = 2.0;
+    lf.Evaluate(x, res); // 1 - 2 + 6 = 5
+    ASSERT_TRUE(doubleEqual(res, 5.0));
 }
 
 TEST(test_linear_form_append_set_coefficient) {
@@ -867,7 +870,7 @@ TEST(test_linear_form_compound_operators_and_equality) {
 }
 
 TEST(test_linear_form_with_complex) {
-    Complex c[] = {Complex(1, 0), Complex(0, 1), Complex(2, 0)}; // F(z) = 1 + iz + 2z^2
+    Complex c[] = {Complex(1, 0), Complex(0, 1), Complex(2, 0)};
     LinearForm<Complex> lf(c, 3);
     
     ASSERT_EQ(lf.CoefficicentCount(), 3);
@@ -875,8 +878,10 @@ TEST(test_linear_form_with_complex) {
     ASSERT_TRUE(complexEqual(lf.GetCoefficient(1), Complex(0, 1)));
     
     Complex z(1.0, 1.0);
+    Complex z2(0.0, 2.0);
+    Complex zz[] = {z, z2};
     Complex res;
-    lf.Evaluate(z, res);
+    lf.Evaluate(zz, res);
     ASSERT_TRUE(complexEqual(res, Complex(0.0, 5.0)));
     
     auto to_conjugate = [](const Complex& x) { return Complex(x.real(), -x.imag()); };
@@ -897,8 +902,9 @@ TEST(test_linear_form_edge_cases) {
     // Где все коэффициенты нулевые
     double zeros[] = {0.0, 0.0, 0.0};
     LinearForm<double> all_zeros(zeros, 3);
+    double x[] = {100.0, 100.0};
     double eval_res;
-    all_zeros.Evaluate(100.0, eval_res);
+    all_zeros.Evaluate(x, eval_res);
     ASSERT_TRUE(doubleEqual(eval_res, 0.0));
 }
 

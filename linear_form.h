@@ -17,12 +17,12 @@ public:
     LinearForm(const LinearForm<T> &other) : coefs(MutableArraySequence<T>(other.coefs)) {}
 
 
-    int CoefficicentCount() const {
+    int CoefficientCount() const {
         return coefs.GetLength(); 
     }
 
     const T& GetCoefficient(int num) const {
-        if (num > CoefficicentCount())
+        if (num > CoefficientCount())
             throw IndexOutOfRangeException("Coefficient number out of range in LinearForm::GetCoefficient");
         else if (num < 0)
             throw IndexOutOfRangeException("Coefficient number must be non-negative in LinearForm::GetCoefficient");
@@ -67,13 +67,10 @@ public:
         return multiplied;
     }
 
-    void Evaluate(const T &x, T &result) {
-        result = T();
-        T power = T(1);
-        for (int i = 0; i < coefs.GetLength(); i++) {
-            result = result + coefs[i] * power;
-            power = power * x; 
-        }
+    void Evaluate(const T *x, T &result) {
+        result = coefs[0];
+        for (int i = 0; i < coefs.GetLength()-1; i++)
+            result = result + coefs[i+1] * x[i];
     }
 
     LinearForm<T> AppendCoefficient(const T &coef) {
@@ -86,12 +83,12 @@ public:
         if (num < 0)
             throw IndexOutOfRangeException("Coefficient number must be non-negative in LinearForm::SetCoefficient");
 
-        int new_num = CoefficicentCount();
+        int new_num = CoefficientCount();
         if (num > new_num) 
             new_num = num + 1;
 
         DynamicArray<T> new_coefs = DynamicArray<T>(coefs.GetLength());
-        for (int i = 0; i < CoefficicentCount(); i++) {
+        for (int i = 0; i < CoefficientCount(); i++) {
             new_coefs.Set(i, GetCoefficient(i));
         }
         new_coefs.Resize(new_num);
@@ -102,7 +99,7 @@ public:
 
     LinearForm<T> Map(T (*func)(const T&)) {
         DynamicArray<T> new_coefs = DynamicArray<T>(coefs.GetLength());
-        for (int i = 0; i < CoefficicentCount(); i++) {
+        for (int i = 0; i < CoefficientCount(); i++) {
             new_coefs.Set(i, func(GetCoefficient(i)));
         }
         LinearForm<T> result = LinearForm<T>(new_coefs);
@@ -111,14 +108,14 @@ public:
 
     void Reduce(T (*func)(const T&, const T&), const T &init, T &result) {
         T reduced = init;
-        for (int i = 0; i < CoefficicentCount(); i++) 
+        for (int i = 0; i < CoefficientCount(); i++) 
             reduced = func(reduced, GetCoefficient(i));
         result = reduced;
     }
 
     LinearForm<T> Where(bool (*pred)(const T&)) {
         DynamicArray<T> new_coefs = DynamicArray<T>(coefs.GetLength());
-        for (int i = 0; i < CoefficicentCount(); i++) {
+        for (int i = 0; i < CoefficientCount(); i++) {
             if (pred(GetCoefficient(i)))
                 new_coefs.Set(i, GetCoefficient(i));
             else
@@ -146,8 +143,8 @@ public:
     }
 
     bool operator==(const LinearForm<T> &other) {
-        if (CoefficicentCount() != other.CoefficicentCount()) return false;
-        for (int i = 0; i < CoefficicentCount(); i++) {
+        if (CoefficientCount() != other.CoefficientCount()) return false;
+        for (int i = 0; i < CoefficientCount(); i++) {
             if (!(GetCoefficient(i) == other.GetCoefficient(i))) return false;
         }
         return true;
