@@ -6,6 +6,10 @@
 #include "complex.h"
 #include "square_matrix.h"
 #include "for_all_ui.h"
+#include "polynomial_plot.h"
+#include <fstream>
+#include <limits>
+#include <type_traits>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -34,6 +38,7 @@ void polynomialMenu() {
     std::cout << "8. Delete all polynomials\n";
     std::cout << "9. Show all polynomials\n";
     std::cout << "10. Evaluate polynomial at a value\n";
+    std::cout << "11. Plot polynomial to SVG file\n";
     std::cout << "0. Back to main menu\n";
     std::cout << "Choice: ";
 }
@@ -136,7 +141,7 @@ void runPolyUIForType() {
                         std::cout << "No polynomials created yet!\n";
                         break;
                     }
-                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to append coefficient: ");
+                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to append coefficient (0-");
                     T coef = readValue<T>("Enter coefficient to append: ");
                     
                     // AppendCoefficient возвращает новый полином
@@ -162,7 +167,7 @@ void runPolyUIForType() {
                         std::cout << "No polynomials created yet!\n";
                         break;
                     }
-                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to modify: ");
+                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to modify (0-");
                     int degree = readValue<int>("Enter degree to change: ");
                     if (degree < 0) {
                         std::cout << "Degree must be non-negative!\n";
@@ -192,8 +197,8 @@ void runPolyUIForType() {
                         std::cout << "Need at least 2 polynomials for addition!\n";
                         break;
                     }
-                    int idx1 = selectPolynomialIndex(polyCount, "Select first polynomial: ");
-                    int idx2 = selectPolynomialIndex(polyCount, "Select second polynomial: ");
+                    int idx1 = selectPolynomialIndex(polyCount, "Select first polynomial (0-");
+                    int idx2 = selectPolynomialIndex(polyCount, "Select second polynomial (0-");
                     
                     Polynomial<T> result = (*polynomials[idx1]) + (*polynomials[idx2]);
                     
@@ -214,8 +219,8 @@ void runPolyUIForType() {
                         std::cout << "Need at least 2 polynomials for multiplication!\n";
                         break;
                     }
-                    int idx1 = selectPolynomialIndex(polyCount, "Select first polynomial: ");
-                    int idx2 = selectPolynomialIndex(polyCount, "Select second polynomial: ");
+                    int idx1 = selectPolynomialIndex(polyCount, "Select first polynomial (0-");
+                    int idx2 = selectPolynomialIndex(polyCount, "Select second polynomial (0-");
                     
                     Polynomial<T> result = (*polynomials[idx1]) * (*polynomials[idx2]);
                     
@@ -236,7 +241,7 @@ void runPolyUIForType() {
                         std::cout << "No polynomials created yet!\n";
                         break;
                     }
-                    int idx = selectPolynomialIndex(polyCount, "Select polynomial: ");
+                    int idx = selectPolynomialIndex(polyCount, "Select polynomial (0-");
                     T scalar = readValue<T>("Enter scalar value: ");
                     
                     Polynomial<T> result = (*polynomials[idx]) * scalar;
@@ -258,8 +263,8 @@ void runPolyUIForType() {
                         std::cout << "Need at least 2 polynomials for composition!\n";
                         break;
                     }
-                    int idx1 = selectPolynomialIndex(polyCount, "Select outer polynomial f(x): ");
-                    int idx2 = selectPolynomialIndex(polyCount, "Select inner polynomial g(x): ");
+                    int idx1 = selectPolynomialIndex(polyCount, "Select outer polynomial f(x) (0-");
+                    int idx2 = selectPolynomialIndex(polyCount, "Select inner polynomial g(x) (0-");
                     
                     Polynomial<T> result = polynomials[idx1]->Composition(*polynomials[idx2]);
                     
@@ -305,13 +310,47 @@ void runPolyUIForType() {
                         std::cout << "No polynomials created yet!\n";
                         break;
                     }
-                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to evaluate: ");
+                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to evaluate (0-");
                     T x = readValue<T>("Enter value of x: ");
                     
                     T result;
                     polynomials[idx]->Evaluate(x, result);
                     
                     std::cout << "P" << idx << "(" << x << ") = " << result << "\n";
+                    break;
+                }
+
+                case 11: // Plot polynomial to SVG
+                {
+                    if (polyCount == 0) {
+                        std::cout << "No polynomials created yet!\n";
+                        break;
+                    }
+                    int idx = selectPolynomialIndex(polyCount, "Select polynomial to plot (0-");
+                    
+                    // Параметры графика
+                    double x_min = readValue<double>("Enter X min (default -10): ");
+                    double x_max = readValue<double>("Enter X max (default 10): ");
+                    if (x_min >= x_max) {
+                        std::cout << "Invalid range! Using default [-10, 10]\n";
+                        x_min = -10;
+                        x_max = 10;
+                    }
+                    
+                    std::string filename;
+                    std::cout << "Enter output filename (default: plot.svg): ";
+                    std::getline(std::cin, filename);
+                    if (filename.empty()) filename = "plot.svg";
+                    if (filename.find(".svg") == std::string::npos) {
+                        filename += ".svg";
+                    }
+                    
+                    try {
+                        plotPolynomialToSVG(*polynomials[idx], filename, x_min, x_max);
+                        std::cout << "SVG graph generated successfully!\n";
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error plotting: " << e.what() << "\n";
+                    }
                     break;
                 }
                     
