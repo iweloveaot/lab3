@@ -154,7 +154,7 @@ void runUIForType() {
                         std::cout << "No linear forms created yet!\n";
                         break;
                     }
-                    int idx = selectLinearFormIndex(linfCount, "Select polynomial to modify (0-");
+                    int idx = selectLinearFormIndex(linfCount, "Select linear form to modify (0-");
                     int num = readValue<int>("Enter coefficient number to change: ");
                     if (num < 0) {
                         std::cout << "Number must be non-negative!\n";
@@ -183,8 +183,8 @@ void runUIForType() {
                         std::cout << "Need at least 2 linear forms for addition!\n";
                         break;
                     }
-                    int idx1 = selectLinearFormIndex(linfCount, "Select first polynomial (0-");
-                    int idx2 = selectLinearFormIndex(linfCount, "Select second polynomial (0-");
+                    int idx1 = selectLinearFormIndex(linfCount, "Select first linear form (0-");
+                    int idx2 = selectLinearFormIndex(linfCount, "Select second linear form (0-");
                     
                     LinearForm<T> result = (*linforms[idx1]) + (*linforms[idx2]);
                     
@@ -205,7 +205,7 @@ void runUIForType() {
                         std::cout << "No linear forms created yet!\n";
                         break;
                     }
-                    int idx = selectLinearFormIndex(linfCount, "Select polynomial (0-");
+                    int idx = selectLinearFormIndex(linfCount, "Select linera form (0-");
                     T scalar = readValue<T>("Enter scalar value: ");
                     
                     LinearForm<T> result = (*linforms[idx]) * scalar;
@@ -252,7 +252,7 @@ void runUIForType() {
                         std::cout << "No linear forms created yet!\n";
                         break;
                     }
-                    int idx = selectLinearFormIndex(linfCount, "Select polynomial to evaluate (0-");
+                    int idx = selectLinearFormIndex(linfCount, "Select linear form to evaluate (0-");
                     int l = linforms[idx]->CoefficientCount();
                     T x[l];
                     for (int i = 0; i < l-1; i++) { 

@@ -72,7 +72,6 @@ void plotPolynomialToSVG(Polynomial<T>& poly,
     for (int i = 0; i <= samples; ++i) {
         double x = x_min + (x_max - x_min) * i / samples;
         double y = evalPolynomialDouble(poly, x);
-        std::cout << y << " ";
         
         if (y < y_min) y_min = y;
         if (y > y_max) y_max = y;

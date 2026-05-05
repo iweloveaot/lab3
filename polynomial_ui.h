@@ -7,6 +7,7 @@
 #include "square_matrix.h"
 #include "for_all_ui.h"
 #include "polynomial_plot.h"
+#include "polynomial_interpolation.h"
 #include <fstream>
 #include <limits>
 #include <type_traits>
@@ -15,13 +16,15 @@
 #include <sstream>
 #include <vector>
 
+
 void showMainPolyMenu() {
-    std::cout << "======== WORKING WITH POLYNOMIALS ========\n";
-    std::cout << "Choose coefficient type:\n";
+    std::cout << "\n======== WORKING WITH POLYNOMIALS ========\n";
+    std::cout << "Choose coefficient type or operation:\n";
     std::cout << "1. int\n";
     std::cout << "2. double\n";
     std::cout << "3. Complex\n";
     std::cout << "4. SquareMatrix<int, 3>  \n";
+    std::cout << "5. Polynomial interpolation;\n";
     std::cout << "0. Exit\n";
     std::cout << "Choise: ";
 }
@@ -102,6 +105,60 @@ int selectPolynomialIndex(int count, const std::string& prompt = "Select polynom
     return idx;
 }
 
+void interpolationUI() {
+    
+    int dots = readValue<int>("Enter number of points: ");
+    double x[dots], y[dots];
+    for (int i = 0; i < dots; i++) {
+        x[i] = readValue<double>("Enter x" + std::to_string(i+1) + ": ");
+        y[i] = readValue<double>("Enter y" + std::to_string(i+1) + ": ");
+    }
+
+    int inter_choice = readValue<int>("Enter 1 - basic interpolation (slau solution) or 2 - interpolation with Lagrange formula: ");
+    while (inter_choice != 1 && inter_choice != 2) {
+        std::cout << "Invalid input! Enter only 1 or 2\n";
+        inter_choice = readValue<int>("Enter 1 - basic interpolation (slau solution) or 2 - interpolation with Lagrange formula: ");
+    }
+
+    Polynomial<double> interpolated;
+    if (inter_choice == 1) interpolated = BaseInterpolation(x, y, dots);
+    else if (inter_choice == 2) interpolated = Lagrange(x, y, dots);
+
+    std::cout << "Result of interpolation: \n";
+    printPolynomial(interpolated, "");
+
+    int graph_choice = readValue<int>("Do you want to see the plot? (1 - yes/ 0 - no): ");
+    while (graph_choice != 1 && graph_choice != 0) {
+        std::cout << "Invalid input! Enter only 1 or 0\n";
+        graph_choice = readValue<int>("Do you want to see the plot? (1 - yes/ 0 - no): ");
+    }
+
+    if (graph_choice) {
+        double x_min = readValue<double>("Enter X min (default -10): ");
+        double x_max = readValue<double>("Enter X max (default 10): ");
+        if (x_min >= x_max) {
+            std::cout << "Invalid range! Using default [-10, 10]\n";
+            x_min = -10;
+            x_max = 10;
+        }
+                    
+        std::string filename;
+        std::cout << "Enter output filename (default: plot.svg): ";
+        std::getline(std::cin, filename);
+        if (filename.empty()) filename = "plot.svg";
+        if (filename.find(".svg") == std::string::npos) {
+            filename += ".svg";
+        }
+                    
+        try {
+            plotPolynomialToSVG(interpolated, filename, x_min, x_max);
+            std::cout << "SVG graph generated successfully!\n";
+        } catch (const std::exception& e) {
+            std::cerr << "Error plotting: " << e.what() << "\n";
+        }
+    }
+}
+
 template<typename T>
 void runPolyUIForType() {
     Polynomial<T>* polynomials[10] = {nullptr};
@@ -113,7 +170,7 @@ void runPolyUIForType() {
     do {
         polynomialMenu();
         while (!(std::cin >> choice)) {
-            std::cout << "Invalid input. Please enter command 0 to 10: ";
+            std::cout << "Invalid input. Please enter command 0 to 11: ";
             std::cin.clear();
             std::cin.ignore(10000, '\n');
         }
@@ -379,7 +436,7 @@ void PolynomialUI() {
     do {
         showMainPolyMenu();
         while (!(std::cin >> choice)) {
-            std::cout << "Invalid input. Please enter command 0 to 4: ";
+            std::cout << "Invalid input. Please enter command 0 to 5: ";
             std::cin.clear();
             std::cin.ignore(10000, '\n');
         }
@@ -402,6 +459,10 @@ void PolynomialUI() {
                 }
                 case 4: {
                     runPolyUIForType<SquareMatrix<int, 3>>();
+                    break;
+                }
+                case 5: {
+                    interpolationUI();
                     break;
                 }
                 case 0:
