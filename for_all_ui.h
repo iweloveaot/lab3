@@ -6,16 +6,8 @@
 #include <sstream>
 
 template<typename T>
-T readValue(const std::string& prompt) {
-    T value;
-    std::cout << prompt;
-    while (!(std::cin >> value)) {
-        std::cout << "Invalid input. " << prompt;
-        std::cin.clear();
-        std::cin.ignore(10000, '\n');
-    }
-    std::cin.ignore(10000, '\n');
-    return value;
-}
+T readValue(const std::string& prompt);
+
+#include "for_all_ui.tpp"
 
 #endif /*_FOR_ALL_UI_H_*/

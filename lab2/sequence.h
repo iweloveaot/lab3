@@ -1,8 +1,8 @@
-#ifndef _SEQUANCE_H_
-#define _SEQUANCE_H_
+#ifndef _SEQUENCE_H_
+#define _SEQUENCE_H_
+
 #include "option.h"
 #include "ienumerable.h"
-
 
 template <typename T>
 class Sequence : public IEnumerable<T> {
@@ -20,21 +20,10 @@ public:
     virtual Sequence<T>* GetSubsequence(int startIndex, int endIndex) const = 0;
     virtual int GetLength() const = 0;
 
-    virtual Sequence<T>* Append(const T &item) {
-        return Instance()->AppendImplict(item);
-    }
-
-    virtual Sequence<T>* Prepend(const T &item) {
-        return Instance()->PrependImplict(item);
-    }
-
-    virtual Sequence<T>* InsertAt(const T &item, int index) {
-        return Instance()->InsertAtImplict(item, index);
-    }
-
-    virtual Sequence<T>* Concat(const Sequence<T> *other) {
-        return Instance()->ConcatImplict(other);
-    }
+    virtual Sequence<T>* Append(const T &item);
+    virtual Sequence<T>* Prepend(const T &item);
+    virtual Sequence<T>* InsertAt(const T &item, int index);
+    virtual Sequence<T>* Concat(const Sequence<T> *other);
 
     virtual Sequence<T>* Map(T (*func)(const T&)) const = 0;
     virtual Sequence<T>* Where(bool (*pred)(const T&)) const = 0;
@@ -44,11 +33,11 @@ public:
 
     virtual IEnumerator<T>* GetEnumerator() const = 0;
 
-    virtual const T& operator[](int index) const {
-        return Get(index);
-    };
+    virtual const T& operator[](int index) const;
 
-    virtual ~Sequence() {}
+    virtual ~Sequence();
 };
 
-#endif /* _SEQUANCE_H_ */
+#include "sequence.tpp"
+
+#endif // _SEQUENCE_H_
